@@ -323,6 +323,10 @@
             supported by
             <a class="navbar-brand" href="http://www.gurobi.com" style="margin-left: 5px">Gurobi</a>
         </div>
+        <div>
+            <a class="navbar-brand" href="https://github.com/PatrickPaetzold/RectEuler" style="margin-left: 25px">Get Code!</a>
+        </div>
+        
         <!--        </div>-->
         <NavbarToggler on:click={() => (isOpen = !isOpen)}/>
         <Collapse {isOpen} navbar expand="md" on:update={handleUpdate}>
