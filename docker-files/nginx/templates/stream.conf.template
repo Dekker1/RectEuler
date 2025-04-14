@@ -1,0 +1,19 @@
+   upstream stream_postgres {
+        server postgres:5432;
+    }
+  server {
+    listen 5432;
+   
+    proxy_pass stream_postgres;
+    
+  }
+
+     upstream stream_redis {
+        server ${REDIS_SERVER_ADDR};
+    }
+  server {
+    listen 6379;
+
+    proxy_pass stream_redis;
+
+  }

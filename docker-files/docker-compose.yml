@@ -1,0 +1,119 @@
+services:
+  web:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - static-content:/www/static:ro
+
+    environment:
+      - PG_SERVER_ADDR=postgres:5432
+      - REDIS_SERVER_ADDR=redis:6379
+      - BACKEND_SERVER_ADDR=backend:80
+      - SERVER_ADDR=rectvis.de
+    networks:
+      - backbone
+    ports:
+      - 80:80
+      - 443:443
+      - 127.0.0.1:5432:5432
+
+    depends_on:
+      - backend
+
+
+  worker:
+    build: ./worker
+    image: worker
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./secrets/gurobi.lic:/opt/gurobi/gurobi.lic:ro
+      - ./secrets/postgres_password.txt:/run/secrets/POSTGRES_PASSWORD:ro
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_HOSTNAME=redis
+      - REDIS_KEY=rectEuler
+      - POSTGRES_HOSTNAME=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=recteuler
+
+
+    networks:
+      - backbone
+
+
+  backend:
+    build: ./backend
+    image: backend
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - REDIS_PORT=6379
+      - REDIS_HOSTNAME=redis
+      - REDIS_KEY=rectEuler
+      - POSTGRES_HOSTNAME=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=recteuler
+      - POSTGRES_PASSWORD_FILE=/run/secrets/POSTGRES_PASSWORD
+      - PYTHONUNBUFFERED=x
+    networks:
+      - backbone
+    expose:
+      - 80
+    links:
+      - postgres
+    volumes:
+      - ./secrets/postgres_password.txt:/run/secrets/POSTGRES_PASSWORD:ro
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+    networks:
+      - backbone
+
+
+  postgres:
+    build: ./postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD_FILE=/run/secrets/POSTGRES_PASSWORD
+      - POSTGRES_DB=recteuler
+      - POSTGRES_PORT=5432
+      - ALLOW_EMPTY_PASSWORD=no
+    networks:
+      - backbone
+    expose:
+      - 5432
+    volumes:
+      - database_content:/var/lib/postgresql/data
+      - ./secrets/postgres_password.txt:/run/secrets/POSTGRES_PASSWORD:ro
+
+
+  build-svelte:
+    build: ./svelte-app
+    image: build-svelte
+    volumes:
+      - static-content:/app-static/public/static
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+
+
+volumes:
+  static-content:
+  database_content:
+
+networks:
+  backbone:
+    driver: bridge

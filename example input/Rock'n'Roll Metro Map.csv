@@ -1,0 +1,233 @@
+Band,Pop Rockstars,Punk Rock,Hardcore,Emo,Alternative Rock,Grunge,Heavy Metal,Nu-Metal
+The Beatles,1,0,0,0,0,0,0,0
+The Beach Boys,1,0,0,0,0,0,0,0
+The Rolling Stones,1,0,0,0,0,0,0,0
+The Who,1,1,0,0,0,0,0,0
+Pink Floyd,1,0,0,0,0,0,0,0
+Eagles,1,0,0,0,0,0,0,0
+Velvet Underground,1,0,0,0,0,0,0,0
+Blondie,1,0,0,0,0,0,0,0
+The Doors,1,0,0,0,0,0,0,0
+Bob Marley and the Wailers,1,0,0,0,0,0,0,0
+Genesis,1,0,0,0,0,0,0,0
+Dire Straits,1,0,0,0,0,0,0,0
+Aerosmith,1,0,0,0,0,0,1,0
+Queen,1,0,0,0,0,0,0,0
+Abba,1,0,0,0,0,0,0,0
+Talking Heads,1,0,0,0,0,0,0,0
+The Police,1,0,0,0,0,0,0,0
+Fleetwood Mac,1,0,0,0,0,0,0,0
+Television,1,0,0,0,0,0,0,0
+DEVO,1,0,0,0,1,0,0,0
+U2,1,0,0,0,1,0,0,0
+The Cure,1,0,0,0,1,0,0,0
+R.E.M.,1,0,0,0,1,0,0,0
+Billy Idol,1,1,0,0,0,0,0,0
+Duran Duran,1,0,0,0,0,0,0,0
+Bon Jovi,1,0,0,0,0,0,0,0
+Guns'n'Roses,1,0,0,0,0,0,0,0
+No Doubt,1,0,0,0,0,0,0,0
+Green Day,1,1,0,0,0,0,0,0
+Red Hot Chilli Peppers,1,0,0,0,0,0,0,0
+Pixies,1,0,0,0,1,0,0,0
+Radiohead,1,0,0,0,1,0,0,0
+Nirvana,0,0,0,0,1,1,0,0
+Smashing Pumpkins,0,0,0,0,1,1,0,0
+The Cranberries,1,0,0,0,1,0,0,0
+Marylin Mansion,1,0,0,0,1,0,1,0
+Blur ,1,0,0,0,1,0,0,0
+Oasis,1,0,0,0,1,0,0,0
+The Verve,1,0,0,0,1,0,0,0
+Blink 182,1,1,0,0,1,0,0,0
+Metallica,1,0,0,0,0,0,1,0
+The White Stripes,1,0,0,0,0,0,0,0
+Coldplay,1,0,0,0,1,0,0,0
+Muse,1,0,0,0,1,0,0,0
+Placebo,1,0,0,0,1,0,0,0
+Foo Fighters,1,0,0,0,1,1,0,0
+MC5,0,1,0,0,0,0,0,0
+The Stooges,0,1,0,0,0,0,0,0
+The Dictators,0,1,0,0,0,0,0,0
+Ramones,0,1,0,0,0,0,0,0
+Sex Pistols,0,1,0,0,0,0,0,0
+The Clash,0,1,0,0,0,0,0,0
+Buzzcocks,0,1,0,0,0,0,0,0
+The Cramps,0,1,0,0,0,0,0,0
+The Misfits,0,1,0,0,0,0,1,0
+Dead Kennedys,0,1,0,0,0,0,0,0
+The Descendents,0,1,0,0,0,0,0,0
+The Exploited,0,1,0,0,0,0,0,0
+Bad Religion,0,1,0,0,0,0,0,0
+Black Flag,0,1,1,0,0,0,0,0
+Agnostic Front,0,1,1,0,0,0,0,0
+Minor Threat,0,1,1,0,0,0,0,0
+Gorilla Biscuits,0,1,1,0,0,0,0,0
+Sick Of it All,0,1,1,0,0,0,0,0
+Fugazi,0,1,1,0,0,0,0,0
+NOFX,0,1,0,0,0,0,0,0
+The Vandals,0,1,0,0,0,0,0,0
+The Offspring,0,1,0,0,0,0,0,0
+Propagandhi,0,1,0,0,0,0,0,0
+"Screeching Weasel
+",0,1,0,0,0,0,0,0
+Good Riddance,0,1,0,0,0,0,0,0
+No Use For A Name,0,1,0,0,0,0,0,0
+Pennywise,0,1,0,0,0,0,0,0
+Jawbreaker,0,1,0,0,0,0,0,0
+Turbonegro,0,1,0,0,0,0,1,0
+Satanic Surfers,0,1,0,0,0,0,0,0
+The Casualties,0,1,0,0,0,0,0,0
+Lagwagon,0,1,0,0,0,0,0,0
+Unwritten Law,0,1,0,0,0,0,0,0
+AFI,0,1,0,0,0,0,0,0
+Rancid,0,1,0,0,0,0,0,0
+Less Than Jake,0,1,0,0,0,0,0,0
+MxPx,0,1,0,0,0,0,0,0
+Strung Out,0,1,0,0,0,0,0,0
+Reel Big Fish,0,1,0,0,0,0,0,0
+Millencolin,0,1,0,0,0,0,0,0
+The Hives,0,1,0,0,1,0,0,0
+The Ataris,0,1,0,0,0,0,0,0
+Alkaline Trio,0,1,0,0,0,0,0,0
+At The Drive-In,0,1,0,0,0,0,0,0
+Death Cab For Cutie,0,1,0,0,0,0,0,0
+Thrice,0,1,0,0,0,0,0,0
+Mars Volta,0,1,0,0,0,0,0,0
+Refused,0,0,1,0,0,0,0,0
+Lifetime,0,0,1,1,0,0,0,0
+Youth of Today,0,0,1,0,0,0,0,0
+Integrity,0,0,1,0,0,0,0,0
+Converge,0,0,1,0,0,0,0,0
+Downset,0,0,1,0,0,0,0,0
+Snapcase,0,0,1,0,0,0,0,0
+Ten Yard Fight,0,0,1,0,0,0,0,0
+Ensign,0,0,1,0,0,0,0,0
+Poison The Well,0,0,1,1,0,0,0,0
+Saosin,0,0,0,1,0,0,0,0
+Matchbook Romance,0,0,0,1,0,0,0,0
+Fall out Boy,0,0,0,1,0,0,0,0
+a Static Lullaby,0,0,0,1,0,0,0,0
+The Used,0,0,0,1,0,0,0,0
+Funeral For a Friend,0,0,0,1,0,0,0,0
+From Autumn To Ashes,0,0,0,1,0,0,0,0
+My Chemical Romance,0,0,0,1,0,0,0,0
+Brand New,0,0,0,1,0,0,0,0
+Rival Schools,0,0,0,1,0,0,0,0
+Taking Back Sunday,0,0,0,1,0,0,0,0
+Simple Plan,0,0,0,1,0,0,0,0
+Dashboard Confession,0,0,0,1,0,0,0,0
+Further Seems Forever,0,0,0,1,0,0,0,0
+Something Corporate,0,0,0,1,0,0,0,0
+Thursday,0,0,0,1,0,0,0,0
+The Juliana Theory,0,0,0,1,0,0,0,0
+New Found Glory,0,0,0,1,0,0,0,0
+Count The Stars,0,0,0,1,0,0,0,0
+Jets To Brazil,0,0,0,1,0,0,0,0
+Elliot,0,0,0,1,0,0,0,0
+The Get Up Kids,0,0,0,1,0,0,0,0
+Sunny Day Real Estate,0,0,0,1,0,0,0,0
+Mineral,0,0,0,1,0,0,0,0
+Glassjaw,0,0,0,1,0,0,0,0
+Texas is The Reason,0,0,0,1,0,0,0,0
+Sonic Youth,0,0,0,0,0,1,0,0
+Faith No More,0,0,0,0,0,1,0,0
+Green River,0,0,0,0,0,1,0,0
+Melvins,0,0,0,0,0,1,0,0
+Soundgarden,0,0,0,0,0,1,0,0
+Mr. Bungle,0,0,0,0,0,1,0,0
+Screaming Thees,0,0,0,0,0,1,0,0
+Stone Temple Pilots,0,0,0,0,0,1,0,0
+Meat Puppets,0,0,0,0,0,1,0,0
+"Mudhoney
+",0,0,0,0,0,1,0,0
+The Jesus Lizard,0,0,0,0,0,1,0,0
+Blind Melon,0,0,0,0,0,1,0,0
+Hole,0,0,0,0,0,1,0,0
+Alice In Chains,0,0,0,0,0,1,1,0
+Pearl Jam,0,0,0,0,0,1,0,0
+3 Doors Down,0,0,0,0,0,1,0,0
+Mad Season,0,0,0,0,0,1,0,0
+Sliverchair,0,0,0,0,0,1,0,0
+Temple of Dog,0,0,0,0,0,1,0,0
+Staind,0,0,0,0,0,1,0,0
+Audioslave,0,0,0,0,1,1,0,0
+Queens of the Stone Age,0,0,0,0,1,1,0,0
+Deep Purple,0,0,0,0,0,0,1,0
+Alice Cooper,0,0,0,0,0,0,1,0
+Black Sabbath,0,0,0,0,0,0,1,0
+Scorpions,0,0,0,0,0,0,1,0
+Led Zeppelin,0,0,0,0,0,0,1,0
+Judas Priest,0,0,0,0,0,0,1,0
+Thin Lizzy,0,0,0,0,0,0,1,0
+"AC/DC
+",0,0,0,0,0,0,1,0
+Kiss,0,0,0,0,0,0,1,0
+Motörhead,0,0,0,0,0,0,1,0
+Iron Maiden,0,0,0,0,0,0,1,0
+"Def Leppard
+",0,0,0,0,0,0,1,0
+Whitesnake,0,0,0,0,0,0,1,0
+Europe,0,0,0,0,0,0,1,0
+Ozzy Osburne,0,0,0,0,0,0,1,0
+Manowar,0,0,0,0,0,0,1,0
+Anthrax,0,0,0,0,0,0,1,0
+Mötley Crue,0,0,0,0,0,0,1,0
+"Pantera
+",0,0,0,0,0,0,1,0
+Slayer,0,0,0,0,0,0,1,0
+Napalm Death,0,0,0,0,0,0,1,0
+Spinal Tap,0,0,0,0,0,0,1,0
+Suicidal Tendencies,0,0,0,0,0,0,1,0
+Halloween,0,0,0,0,0,0,1,0
+Megadeath,0,0,0,0,0,0,1,0
+Poison The Well,0,0,0,0,0,0,1,0
+Sepultura,0,0,0,0,0,0,1,0
+Nine Inch Nails,0,0,0,0,0,0,1,0
+Cannibal Corpse,0,0,0,0,0,0,1,0
+Labyrinth,0,0,0,0,0,0,1,0
+Kyuss,0,0,0,0,0,0,1,0
+Deftones,0,0,0,0,0,0,1,1
+Korn,0,0,0,0,0,0,1,1
+System Of a Down,0,0,0,0,0,0,1,1
+Cradle of Filth,0,0,0,0,0,0,1,0
+Rammstein,0,0,0,0,0,0,1,0
+Rage Against the Machine,0,0,0,0,0,0,0,1
+Limp Bizkit,0,0,0,0,0,0,0,1
+Incubus,0,0,0,0,0,0,0,1
+"P.O.D.
+",0,0,0,0,0,0,0,1
+Linkin Park,0,0,0,0,0,0,0,1
+Siouxsie & The Banshees,0,0,0,0,1,0,0,0
+Joy Division,0,0,0,0,1,0,0,0
+Pulp,0,0,0,0,1,0,0,0
+Dinosaur Jr,0,0,0,0,1,0,0,0
+Depeche Mode,0,0,0,0,1,0,0,0
+New Order,0,0,0,0,1,0,0,0
+Suide,0,0,0,0,1,0,0,0
+HIM,0,0,0,0,1,0,0,0
+Bush,0,0,0,0,1,0,0,0
+The Cardigans,0,0,0,0,1,0,0,0
+Stereophonics,0,0,0,0,1,0,0,0
+Garbage,0,0,0,0,1,0,0,0
+Modest Mouse,0,0,0,0,1,0,0,0
+Gorillaz,0,0,0,0,1,0,0,0
+Belle and Sebastian,0,0,0,0,1,0,0,0
+Supergrass,0,0,0,0,1,0,0,0
+Ash,0,0,0,0,1,0,0,0
+Weezer,0,0,0,0,1,0,0,0
+Jimmy Eat World,0,0,0,0,1,0,0,0
+"The Strokes
+",0,0,0,0,1,0,0,0
+Interpol,0,0,0,0,1,0,0,0
+The Shins,0,0,0,0,1,0,0,0
+The Vines,0,0,0,0,1,0,0,0
+Yeah Yeah Yeahs,0,0,0,0,1,0,0,0
+Franz Ferdinand,0,0,0,0,1,0,0,0
+The Libertines,0,0,0,0,1,0,0,0
+Arctic Monkeys,0,0,0,0,1,0,0,0
+The Killers,0,0,0,0,1,0,0,0
+Bloc Party,0,0,0,0,1,0,0,0
+The Editors,0,0,0,0,1,0,0,0
+Babyshambles,0,0,0,0,1,0,0,0
+Kaiser Chiefs,0,0,0,0,1,0,0,0
+Art Brut,0,0,0,0,1,0,0,0
