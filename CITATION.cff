@@ -18,29 +18,13 @@ version: 1.0.0
 url: https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.14814
 doi: https://doi.org/10.1111/cgf.14814
 date-released: '2023-04-14'
-preferred-citation:
-  authors:
-    - family-names: Paetzold
-      given-names: Patrick
-    - family-names: Kehlbeck
-      given-names: Rebecca
-    - family-names: Strobelt
-      given-names: Hendrik
-    - family-names: Xue
-      given-names: Yumeng
-    - family-names: Storandt
-      given-names: Sabine
-    - family-names: Deussen
-      given-names: Oliver
-  title: 'RectEuler: Visualizing Intersecting Sets using Rectangles'
-  doi: https://doi.org/10.1111/cgf.14814
-  url: https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.14814
-  type: article-journal
-  pages: 87-98
-  year: '2023'
-  conference: {}
-  publisher: {}
-  journal: "Computer Graphics Forum"
-  volume:42,
-  issue:1
+title: 'RectEuler: Visualizing Intersecting Sets using Rectangles'
+doi: https://doi.org/10.1111/cgf.14814
+url: https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.14814
+type: article-journal
+pages: 87-98
+year: '2023'
+journal: "Computer Graphics Forum"
+volume:42
+issue:1
 
