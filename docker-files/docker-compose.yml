@@ -13,7 +13,7 @@ services:
       - PG_SERVER_ADDR=postgres:5432
       - REDIS_SERVER_ADDR=redis:6379
       - BACKEND_SERVER_ADDR=backend:80
-      - SERVER_ADDR=rectvis.de
+      - SERVER_ADDR=localhost
     networks:
       - backbone
     ports:
@@ -108,6 +108,7 @@ services:
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
+
 
 
 volumes:

@@ -8,6 +8,7 @@ server
             root /var/www/certbot;
         }
 
+
 	location /api/
 	{
 		rewrite ^/api/(.*) /$1 break;
@@ -26,3 +27,30 @@ server
 	}
 
 }
+
+#uncomment to use SSL after obtaining SSL certificate
+#server {
+#    listen 443 default_server ssl http2;
+#    listen [::]:443 ssl http2;
+#    root /www/static/;
+#    server_name rectvis.de;
+#    ssl_certificate /etc/nginx/ssl/live/rectvis.de/fullchain.pem;
+#    ssl_certificate_key /etc/nginx/ssl/live/rectvis.de/privkey.pem;
+
+
+#    	location /api/
+#    	{
+#   		rewrite ^/api/(.*) /$1 break;
+#    		proxy_pass http://${BACKEND_SERVER_ADDR}/;
+#    		proxy_set_header Host $host;
+#    		proxy_set_header X-Real-IP $remote_addr;
+#    	}
+#    	location /static/
+#    	{
+#    		root /www/;
+#    	}
+#    	location /
+#    	{
+#    		try_files /index.html =404;
+#    	}
+#}
