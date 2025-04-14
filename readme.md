@@ -1,6 +1,12 @@
+# How to use RectEuler
+If you want to use our RectEuler tool, you don't have to run it on your server. On https://rectvis.de/, you can upload your datasets using the "Upload Data" button. After the optimization, you can download the final visualization.
+
+There are some example datasets in the `examples` folder.
+
+
 # Prerequesist
 ## Gurobi Licece
-To run the optimization, a Gurobi WSL Licence is required. For academic use, it can be obtained from https://www.gurobi.com/academia/academic-program-and-licenses/. 
+A Gurobi WSL Licence is required to run the optimization. For academic use, it can be obtained from https://www.gurobi.com/academia/academic-program-and-licenses/. 
 If you have obtained a `gurobi.lic` file, place it in `docker-files/secrets`. You can delete the `gurobi.lic.sample` file.
 ## Set Up Postgres
 In `docker-files/secrets` rename `postgres_password.txt.sample` to `postgres_password.txt` and put in it a secure password used for the database.
