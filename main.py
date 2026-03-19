@@ -13,7 +13,6 @@ from typing import Any
 from minizinc import Instance, Model, Solver
 from PIL import Image, ImageDraw, ImageFont
 
-
 PRIMITIVE_DIST = 10.0
 BOX_DIST = 10.0
 BOX_TEXT_LEFT_PAD = 10.0
@@ -73,7 +72,9 @@ def measure_text(text: str, font_size: int) -> tuple[float, float]:
     return float(right - left), float(bottom - top)
 
 
-def text_size_with_margin(text: str, margin: tuple[int, int, int, int], font_size: int) -> tuple[float, float]:
+def text_size_with_margin(
+    text: str, margin: tuple[int, int, int, int], font_size: int
+) -> tuple[float, float]:
     width, height = measure_text(text, font_size)
     return (
         width + float(margin[0] + margin[1]),
@@ -85,9 +86,17 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
     if not sizes:
         return 0.0, 0.0
 
-    root: dict[str, Any] = {"used": False, "pos": (0.0, 0.0), "size": [sizes[0][0], sizes[0][1]], "down": None, "right": None}
+    root: dict[str, Any] = {
+        "used": False,
+        "pos": (0.0, 0.0),
+        "size": [sizes[0][0], sizes[0][1]],
+        "down": None,
+        "right": None,
+    }
 
-    def find_node(node: dict[str, Any] | None, size: tuple[float, float]) -> dict[str, Any] | None:
+    def find_node(
+        node: dict[str, Any] | None, size: tuple[float, float]
+    ) -> dict[str, Any] | None:
         if node is None:
             return None
         if node["used"]:
@@ -96,7 +105,9 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             return node
         return None
 
-    def split_node(node: dict[str, Any], size: tuple[float, float]) -> tuple[float, float]:
+    def split_node(
+        node: dict[str, Any], size: tuple[float, float]
+    ) -> tuple[float, float]:
         node["used"] = True
         node["down"] = {
             "used": False,
@@ -127,7 +138,13 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             "used": True,
             "pos": root["pos"],
             "size": [root["size"][0] + width, root["size"][1]],
-            "right": {"used": False, "pos": (original_root["size"][0], 0.0), "size": [width, root["size"][1]], "down": None, "right": None},
+            "right": {
+                "used": False,
+                "pos": (original_root["size"][0], 0.0),
+                "size": [width, root["size"][1]],
+                "down": None,
+                "right": None,
+            },
             "down": original_root,
         }
         node = find_node(root, (width, height))
@@ -146,7 +163,13 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             "used": True,
             "pos": root["pos"],
             "size": [root["size"][0], root["size"][1] + height],
-            "down": {"used": False, "pos": (0.0, original_root["size"][1]), "size": [root["size"][0], height], "down": None, "right": None},
+            "down": {
+                "used": False,
+                "pos": (0.0, original_root["size"][1]),
+                "size": [root["size"][0], height],
+                "down": None,
+                "right": None,
+            },
             "right": original_root,
         }
         node = find_node(root, (width, height))
@@ -155,8 +178,12 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
     def grow_node(width: float, height: float) -> tuple[float, float] | None:
         can_grow_down = width <= root["size"][0]
         can_grow_right = height <= root["size"][1]
-        should_grow_right = can_grow_right and (root["size"][1] >= root["size"][0] + width)
-        should_grow_down = can_grow_down and (root["size"][0] >= root["size"][1] + height)
+        should_grow_right = can_grow_right and (
+            root["size"][1] >= root["size"][0] + width
+        )
+        should_grow_down = can_grow_down and (
+            root["size"][0] >= root["size"][1] + height
+        )
         if should_grow_right:
             return grow_right(width, height)
         if should_grow_down:
@@ -245,12 +272,16 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
         primitive_index = len(primitives)
         primitives.append(primitive)
         primitive_labels.append(" | ".join(members))
-        primitive_membership.append([box_index + 1 in box_ids for box_index in range(len(box_names))])
+        primitive_membership.append(
+            [box_index + 1 in box_ids for box_index in range(len(box_names))]
+        )
         for box_index, flag in enumerate(membership):
             if flag:
                 box_to_primitives[box_index].append(primitive_index)
 
-    box_text_sizes = [text_size_with_margin(name, (0, 2, 0, 0), 18) for name in box_names]
+    box_text_sizes = [
+        text_size_with_margin(name, (0, 2, 0, 0), 18) for name in box_names
+    ]
     box_sets = [set(indices) for indices in box_to_primitives]
     num_boxes = len(box_names)
     num_primitives = len(primitives)
@@ -263,7 +294,10 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
             if box_sets[inner] <= box_sets[outer]:
                 box_subset[outer][inner] = True
 
-    require_primitive_containment = [[primitive_membership[p][b] for p in range(num_primitives)] for b in range(num_boxes)]
+    require_primitive_containment = [
+        [primitive_membership[p][b] for p in range(num_primitives)]
+        for b in range(num_boxes)
+    ]
     for outer in range(num_boxes):
         for inner in range(num_boxes):
             if outer == inner or not box_subset[outer][inner]:
@@ -285,7 +319,9 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
                 require_box_distance[right][left] = True
 
     total_max_size = sum(width for width, _ in box_text_sizes)
-    total_max_size += sum(max(primitive.width, primitive.height) for primitive in primitives)
+    total_max_size += sum(
+        max(primitive.width, primitive.height) for primitive in primitives
+    )
     coord_upper = float(max(1.0, 2.0 * total_max_size))
     primitive_enum = make_enum_values(primitive_labels, "Primitive")
 
@@ -363,7 +399,9 @@ def export_instance_data(csv_path: Path) -> dict[str, Any]:
     return data
 
 
-def solve_csv(csv_path: Path, solver_name: str = "gurobi", time_limit_seconds: int | None = None) -> dict[str, Any]:
+def solve_csv(
+    csv_path: Path, solver_name: str = "gurobi", time_limit_seconds: int | None = None
+) -> dict[str, Any]:
     reduced = reduce_csv(csv_path)
     model = Model(str(Path(__file__).with_name("recteuler.mzn")))
     solver = Solver.lookup(solver_name)
@@ -376,32 +414,35 @@ def solve_csv(csv_path: Path, solver_name: str = "gurobi", time_limit_seconds: i
         result = instance.solve()
 
     runtime = result.statistics.get("time")
-    runtime_seconds = runtime.total_seconds() if isinstance(runtime, timedelta) else None
+    runtime_seconds = (
+        runtime.total_seconds() if isinstance(runtime, timedelta) else None
+    )
 
     def rect_value(raw_rect: Any) -> dict[str, Any]:
         if isinstance(raw_rect, dict):
-            x1 = raw_rect["x1"]
-            y1 = raw_rect["y1"]
-            x2 = raw_rect["x2"]
-            y2 = raw_rect["y2"]
-        elif hasattr(raw_rect, "x1"):
-            x1 = raw_rect.x1
-            y1 = raw_rect.y1
-            x2 = raw_rect.x2
-            y2 = raw_rect.y2
+            x = raw_rect["x"]
+            y = raw_rect["y"]
+            width = raw_rect["width"]
+            height = raw_rect["height"]
+        elif hasattr(raw_rect, "x"):
+            x = raw_rect.x
+            y = raw_rect.y
+            width = raw_rect.width
+            height = raw_rect.height
         else:
-            x1, y1, x2, y2 = raw_rect
+            x, y, width, height = raw_rect
         return {
-            "x1": x1,
-            "y1": y1,
-            "x2": x2,
-            "y2": y2,
-            "width": x2 - x1,
-            "height": y2 - y1,
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
         }
 
     def rects(raw_rects: list[Any], names: list[str]) -> list[dict[str, Any]]:
-        return [{"name": name, **rect_value(raw_rect)} for name, raw_rect in zip(names, raw_rects, strict=True)]
+        return [
+            {"name": name, **rect_value(raw_rect)}
+            for name, raw_rect in zip(names, raw_rects, strict=True)
+        ]
 
     response = {
         "status": str(result.status),
@@ -428,19 +469,38 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="RectEuler MiniZinc utilities.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    solve_parser = subparsers.add_parser("solve", help="Solve the RectEuler layout for a CSV input.")
-    solve_parser.add_argument("csv_path", type=Path, help="CSV file in the original RectEuler example format")
-    solve_parser.add_argument("--solver", default="gurobi", help="MiniZinc solver id or name")
-    solve_parser.add_argument("--time-limit-seconds", type=int, default=None, help="Optional solve time limit")
+    solve_parser = subparsers.add_parser(
+        "solve", help="Solve the RectEuler layout for a CSV input."
+    )
+    solve_parser.add_argument(
+        "csv_path", type=Path, help="CSV file in the original RectEuler example format"
+    )
+    solve_parser.add_argument(
+        "--solver", default="gurobi", help="MiniZinc solver id or name"
+    )
+    solve_parser.add_argument(
+        "--time-limit-seconds", type=int, default=None, help="Optional solve time limit"
+    )
 
-    output_data_parser = subparsers.add_parser("output-data", help="Write the generated MiniZinc instance data for a CSV input to JSON.")
-    output_data_parser.add_argument("csv_path", type=Path, help="CSV file in the original RectEuler example format")
-    output_data_parser.add_argument("output_json", type=Path, help="Where to write the generated JSON data")
+    output_data_parser = subparsers.add_parser(
+        "output-data",
+        help="Write the generated MiniZinc instance data for a CSV input to JSON.",
+    )
+    output_data_parser.add_argument(
+        "csv_path", type=Path, help="CSV file in the original RectEuler example format"
+    )
+    output_data_parser.add_argument(
+        "output_json", type=Path, help="Where to write the generated JSON data"
+    )
 
     args = parser.parse_args(argv)
 
     if args.command == "solve":
-        result = solve_csv(args.csv_path, solver_name=args.solver, time_limit_seconds=args.time_limit_seconds)
+        result = solve_csv(
+            args.csv_path,
+            solver_name=args.solver,
+            time_limit_seconds=args.time_limit_seconds,
+        )
         print(json.dumps(result, indent=2))
         return
 

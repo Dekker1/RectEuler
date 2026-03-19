@@ -23,6 +23,13 @@ type DistanceConfig = record(
 	float: box,
 );
 
+type Margins = record(
+	float: left,
+	float: top,
+	float: right,
+	float: bottom,
+);
+
 PaddingConfig: padding;
 DistanceConfig: distance;
 
@@ -39,71 +46,100 @@ array[Box, Box] of bool: require_box_distance;
 % - /Users/dekker1/Code/temp/RectEuler/docker-files/worker/code/ElementGroup_gurobi.py:13-17
 % - /Users/dekker1/Code/temp/RectEuler/docker-files/worker/code/main.py:165-173
 type Rect = record(
-	var 0.0..coord_upper: x1,
-	var 0.0..coord_upper: y1,
-	var 0.0..coord_upper: x2,
-	var 0.0..coord_upper: y2,
+	var 0.0..coord_upper: x,
+	var 0.0..coord_upper: y,
+	var 0.0..coord_upper: width,
+	var 0.0..coord_upper: height,
 );
 
-Rect: global_box;
-array[Box] of Rect: boxes;
-array[Box] of Rect: box_text_rects;
-array[Primitive] of Rect: primitives;
-var 0.0..coord_upper: z;
+% Shared containment relation for axis-aligned rectangles with explicit margins.
+% This is used for primitive containment, subset-box containment, and coverage by
+% the global bounding box.
+predicate rect_contains(
+	Rect: outer,
+	Rect: inner,
+	Margins: margins,
+) =
+	inner.x - outer.x >= margins.left
+	/\ inner.y - outer.y >= margins.top
+	/\ (outer.x + outer.width) - (inner.x + inner.width) >= margins.right
+	/\ (outer.y + outer.height) - (inner.y + inner.height) >= margins.bottom;
 
-% Global bounding box anchor from /docker-files/worker/code/main.py:170-171.
-constraint global_box.x1 = 0.0;
-constraint global_box.y1 = 0.0;
+predicate rect_contains(Rect: outer, Rect: inner) =
+	rect_contains(outer, inner, (left: 0.0, top: 0.0, right: 0.0, bottom: 0.0));
+
+Rect: global_box ::output = let {
+	var 0.0..coord_upper: width;
+	var 0.0..coord_upper: height;
+} in (x: 0.0, y: 0.0, width: width, height: height);
+array[Box] of Rect: boxes;
+array[Box] of Rect: box_text_rects ::output = [
+	let {
+		var 0.0..coord_upper: x;
+		var 0.0..coord_upper: y;
+	} in (x: x, y: y, width: box_text_size[b].width, height: box_text_size[b].height)
+	| b in Box
+];
+array[Primitive] of Rect: primitives ::output = [
+	let {
+		var 0.0..coord_upper: x;
+		var 0.0..coord_upper: y;
+	} in (x: x, y: y, width: primitive_size[p].width, height: primitive_size[p].height)
+	| p in Primitive
+];
 
 % Original "squareness" helper reproduced from /docker-files/worker/code/main.py:173-176.
 % Note: the original formulation uses |globalBox.x2 - globalBox.y2| rather than
 % |(globalBox.x2 - globalBox.x1) - (globalBox.y2 - globalBox.y1)|. This model
-% keeps that exact formulation.
-constraint global_box.x2 - global_box.y2 <= z;
-constraint -(global_box.x2 - global_box.y2) <= z;
+% keeps the exact value because global_box.x and global_box.y are fixed to 0.
+var 0.0..coord_upper: z ::output = abs(global_box.width - global_box.height);
 
 % Box label geometry from /docker-files/worker/code/Box_gurobi.py:29-35.
 % These constraints place the set name inside each box and ensure the box is
 % wide enough for its label.
 constraint forall(b in Box) (
-	box_text_rects[b].x1 = boxes[b].x1 + padding.box_text_left
-	/\ box_text_rects[b].y1 = boxes[b].y1 + padding.box_text_top
-	/\ box_text_rects[b].x2 = box_text_rects[b].x1 + box_text_size[b].width
-	/\ box_text_rects[b].y2 = box_text_rects[b].y1 + box_text_size[b].height
-	/\ boxes[b].x2 - boxes[b].x1 >= (box_text_rects[b].x2 - box_text_rects[b].x1) + padding.box_text_right_extra
-);
-
-% Primitive fixed-size constraints from /docker-files/worker/code/ElementGroup_gurobi.py:22-25.
-constraint forall(p in Primitive) (
-	primitives[p].x2 - primitives[p].x1 = primitive_size[p].width
-	/\ primitives[p].y2 - primitives[p].y1 = primitive_size[p].height
+	box_text_rects[b].x = boxes[b].x + padding.box_text_left
+	/\ box_text_rects[b].y = boxes[b].y + padding.box_text_top
+	/\ boxes[b].width >= box_text_rects[b].width + padding.box_text_right_extra
 );
 
 % Primitive containment inside its boxes from /docker-files/worker/code/Box_gurobi.py:37-43.
 % The Python data builder reproduces the later removePrimitiveConstrains() calls
 % triggered by subset boxes in /docker-files/worker/code/ModelConstraints.py:42-60.
 constraint forall(b in Box, p in Primitive where require_primitive_containment[b, p]) (
-	primitives[p].x1 - boxes[b].x1 >= padding.box_inner
-	/\ primitives[p].y1 - boxes[b].y1 >= max(padding.box_min_top, box_text_size[b].height + padding.box_inner)
-	/\ boxes[b].x2 - primitives[p].x2 >= padding.box_inner
-	/\ boxes[b].y2 - primitives[p].y2 >= padding.box_inner
+	rect_contains(
+		boxes[b],
+		primitives[p],
+		(
+			left: padding.box_inner,
+			top: max(padding.box_min_top, box_text_size[b].height + padding.box_inner),
+			right: padding.box_inner,
+			bottom: padding.box_inner,
+		),
+	)
 );
 
 % Global bounding-box coverage from /docker-files/worker/code/main.py:202-206.
 constraint forall(b in Box) (
-	global_box.x1 <= boxes[b].x1
-	/\ global_box.y1 <= boxes[b].y1
-	/\ global_box.x2 >= boxes[b].x2
-	/\ global_box.y2 >= boxes[b].y2
+	rect_contains(
+		global_box,
+		boxes[b],
+	)
 );
 
 % Box-subset constraints from /docker-files/worker/code/ModelConstraints.py:41-59.
 % If box_subset[outer, inner] is true, then inner must sit strictly inside outer.
 constraint forall(outer, inner in Box where outer != inner /\ box_subset[outer, inner]) (
-	boxes[outer].x1 <= boxes[inner].x1 - distance.box
-	/\ boxes[outer].y1 <= boxes[inner].y1 - distance.box - box_text_size[outer].height
-	/\ boxes[outer].x2 - distance.box >= boxes[inner].x2
-	/\ boxes[outer].y2 - distance.box >= boxes[inner].y2
+	rect_contains(
+		boxes[outer],
+		boxes[inner],
+		(
+			left: distance.box,
+			top: distance.box + box_text_size[outer].height,
+			right: distance.box,
+			bottom: distance.box,
+		),
+	)
 );
 
 % Primitive exclusion from non-member boxes, recreated from
@@ -116,30 +152,30 @@ constraint forall(outer, inner in Box where outer != inner /\ box_subset[outer, 
 %   box.y2 + primitiveDist <= primitive.y1 + M*b4
 % MiniZinc version uses the native disjunction directly.
 constraint forall(p in Primitive, b in Box where not primitive_membership[p, b]) (
-	primitives[p].x2 + distance.primitive <= boxes[b].x1
-	\/ primitives[p].y2 + distance.primitive <= boxes[b].y1
-	\/ boxes[b].x2 + distance.primitive <= primitives[p].x1
-	\/ boxes[b].y2 + distance.primitive <= primitives[p].y1
+	primitives[p].x + primitives[p].width + distance.primitive <= boxes[b].x
+	\/ primitives[p].y + primitives[p].height + distance.primitive <= boxes[b].y
+	\/ boxes[b].x + boxes[b].width + distance.primitive <= primitives[p].x
+	\/ boxes[b].y + boxes[b].height + distance.primitive <= primitives[p].y
 );
 
 % Set-name non-overlap from /docker-files/worker/code/ModelConstraints.py:63-82.
 % Original formulation again used four binaries plus big-M; this keeps the same
 % four-way separation as a direct logical disjunction.
 constraint forall(b1, b2 in Box where b1 < b2) (
-	box_text_rects[b1].x2 + distance.primitive <= box_text_rects[b2].x1
-	\/ box_text_rects[b1].y2 + distance.primitive <= box_text_rects[b2].y1
-	\/ box_text_rects[b2].x2 + distance.primitive <= box_text_rects[b1].x1
-	\/ box_text_rects[b2].y2 + distance.primitive <= box_text_rects[b1].y1
+	box_text_rects[b1].x + box_text_rects[b1].width + distance.primitive <= box_text_rects[b2].x
+	\/ box_text_rects[b1].y + box_text_rects[b1].height + distance.primitive <= box_text_rects[b2].y
+	\/ box_text_rects[b2].x + box_text_rects[b2].width + distance.primitive <= box_text_rects[b1].x
+	\/ box_text_rects[b2].y + box_text_rects[b2].height + distance.primitive <= box_text_rects[b1].y
 );
 
 % Non-overlap for disjoint boxes from /docker-files/worker/code/ModelConstraints.py:84-107.
 % The original used the same four-binary big-M pattern; MiniZinc uses a direct
 % disjunction of the four relative placements.
 constraint forall(b1, b2 in Box where b1 < b2 /\ prevent_box_overlap[b1, b2]) (
-	boxes[b1].x2 + distance.primitive <= boxes[b2].x1
-	\/ boxes[b1].y2 + distance.primitive <= boxes[b2].y1
-	\/ boxes[b2].x2 + distance.primitive <= boxes[b1].x1
-	\/ boxes[b2].y2 + distance.primitive <= boxes[b1].y1
+	boxes[b1].x + boxes[b1].width + distance.primitive <= boxes[b2].x
+	\/ boxes[b1].y + boxes[b1].height + distance.primitive <= boxes[b2].y
+	\/ boxes[b2].x + boxes[b2].width + distance.primitive <= boxes[b1].x
+	\/ boxes[b2].y + boxes[b2].height + distance.primitive <= boxes[b1].y
 );
 
 % Edge-distance constraints for overlapping, non-nested boxes from
@@ -148,20 +184,20 @@ constraint forall(b1, b2 in Box where b1 < b2 /\ prevent_box_overlap[b1, b2]) (
 % binary and big-M pair of inequalities. MiniZinc can state the intended form
 % directly as abs(edge_a - edge_b) >= box_dist.
 constraint forall(b1, b2 in Box where b1 < b2 /\ require_box_distance[b1, b2]) (
-	abs(boxes[b1].x2 - boxes[b2].x1) >= distance.box
-	/\ abs(boxes[b1].x1 - boxes[b2].x1) >= distance.box
-	/\ abs(boxes[b1].x2 - boxes[b2].x2) >= distance.box
-	/\ abs(boxes[b2].x2 - boxes[b1].x1) >= distance.box
-	/\ abs(boxes[b1].y2 - boxes[b2].y1) >= distance.box
-	/\ abs(boxes[b1].y1 - boxes[b2].y1) >= distance.box
-	/\ abs(boxes[b1].y2 - boxes[b2].y2) >= distance.box
-	/\ abs(boxes[b2].y2 - boxes[b1].y1) >= distance.box
+	abs((boxes[b1].x + boxes[b1].width) - boxes[b2].x) >= distance.box
+	/\ abs(boxes[b1].x - boxes[b2].x) >= distance.box
+	/\ abs((boxes[b1].x + boxes[b1].width) - (boxes[b2].x + boxes[b2].width)) >= distance.box
+	/\ abs((boxes[b2].x + boxes[b2].width) - boxes[b1].x) >= distance.box
+	/\ abs((boxes[b1].y + boxes[b1].height) - boxes[b2].y) >= distance.box
+	/\ abs(boxes[b1].y - boxes[b2].y) >= distance.box
+	/\ abs((boxes[b1].y + boxes[b1].height) - (boxes[b2].y + boxes[b2].height)) >= distance.box
+	/\ abs((boxes[b2].y + boxes[b2].height) - boxes[b1].y) >= distance.box
 );
 
 % Objective from /docker-files/worker/code/main.py:214-216.
 % This minimizes box perimeters-ish extents plus the enclosing box size and z.
 solve minimize
-	sum(b in Box)((boxes[b].x2 - boxes[b].x1) + (boxes[b].y2 - boxes[b].y1))
-	+ (global_box.x2 - global_box.x1)
-	+ (global_box.y2 - global_box.y1)
+	sum(b in Box)(boxes[b].width + boxes[b].height)
+	+ global_box.width
+	+ global_box.height
 	+ z;
