@@ -47,7 +47,7 @@ class ReducedInstance:
     primitive_membership: list[list[bool]]
     require_primitive_containment: list[list[bool]]
     box_subset: list[list[bool]]
-    prevent_box_overlap: list[list[bool]]
+    box_nonoverlap_groups: list[list[int]]
     require_box_distance: list[list[bool]]
     coord_upper: int
 
@@ -224,6 +224,36 @@ def make_enum_values(values: list[str], prefix: str) -> list[str]:
     return enum_values
 
 
+def maximal_cliques_from_adjacency(adjacency: list[set[int]]) -> list[list[int]]:
+    cliques: list[list[int]] = []
+
+    def bron_kerbosch(r: set[int], p: set[int], x: set[int]) -> None:
+        if not p and not x:
+            if len(r) >= 2:
+                cliques.append(sorted(r))
+            return
+
+        pivot_candidates = p | x
+        pivot = (
+            max(pivot_candidates, key=lambda vertex: len(adjacency[vertex]))
+            if pivot_candidates
+            else None
+        )
+        pivot_neighbors = adjacency[pivot] if pivot is not None else set()
+        for vertex in list(p - pivot_neighbors):
+            bron_kerbosch(
+                r | {vertex},
+                p & adjacency[vertex],
+                x & adjacency[vertex],
+            )
+            p.remove(vertex)
+            x.add(vertex)
+
+    bron_kerbosch(set(), set(range(len(adjacency))), set())
+    cliques.sort(key=lambda clique: (len(clique), clique), reverse=True)
+    return cliques
+
+
 def reduce_csv(csv_path: Path) -> ReducedInstance:
     with csv_path.open(newline="", encoding="utf-8") as handle:
         sample = handle.read(4096)
@@ -316,6 +346,13 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
                 require_box_distance[left][right] = True
                 require_box_distance[right][left] = True
 
+    nonoverlap_adjacency = [
+        {other for other in range(num_boxes) if prevent_box_overlap[box][other]}
+        for box in range(num_boxes)
+    ]
+    nonoverlap_cliques = maximal_cliques_from_adjacency(nonoverlap_adjacency)
+    box_nonoverlap_groups = nonoverlap_cliques
+
     total_max_size = sum(width for width, _ in box_text_sizes)
     total_max_size += sum(
         max(primitive.width, primitive.height) for primitive in primitives
@@ -333,7 +370,7 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
         primitive_membership=primitive_membership,
         require_primitive_containment=require_primitive_containment,
         box_subset=box_subset,
-        prevent_box_overlap=prevent_box_overlap,
+        box_nonoverlap_groups=box_nonoverlap_groups,
         require_box_distance=require_box_distance,
         coord_upper=coord_upper,
     )
@@ -372,7 +409,10 @@ def build_instance_data(reduced: ReducedInstance) -> dict[str, Any]:
         "primitive_membership": reduced.primitive_membership,
         "require_primitive_containment": reduced.require_primitive_containment,
         "box_subset": reduced.box_subset,
-        "prevent_box_overlap": reduced.prevent_box_overlap,
+        "box_nonoverlap_groups": [
+            {reduced.box_enum[box] for box in group}
+            for group in reduced.box_nonoverlap_groups
+        ],
         "require_box_distance": reduced.require_box_distance,
     }
 
@@ -380,6 +420,9 @@ def build_instance_data(reduced: ReducedInstance) -> dict[str, Any]:
 def export_instance_data(csv_path: Path) -> dict[str, Any]:
     reduced = reduce_csv(csv_path)
     data = build_instance_data(reduced)
+    data["box_nonoverlap_groups"] = [
+        {"set": sorted(group)} for group in data["box_nonoverlap_groups"]
+    ]
     data["box_enum"] = reduced.box_enum
     data["primitive_enum"] = reduced.primitive_enum
     data["box_names"] = reduced.box_names

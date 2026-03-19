@@ -1,5 +1,7 @@
 % RectEuler MiniZinc extraction from the original worker-side Gurobi model.
 
+include "globals.mzn";
+
 enum Box;
 enum Primitive;
 
@@ -38,7 +40,7 @@ array[Primitive] of Size: primitive_size;
 array[Primitive, Box] of bool: primitive_membership;
 array[Box, Primitive] of bool: require_primitive_containment;
 array[Box, Box] of bool: box_subset;
-array[Box, Box] of bool: prevent_box_overlap;
+list of set of Box: box_nonoverlap_groups;
 array[Box, Box] of bool: require_box_distance;
 
 % Decision variables recreated from:
@@ -150,32 +152,52 @@ constraint forall(outer, inner in Box where outer != inner /\ box_subset[outer, 
 %   primitive.y2 + primitiveDist <= box.y1 + M*b2
 %   box.x2 + primitiveDist <= primitive.x1 + M*b3
 %   box.y2 + primitiveDist <= primitive.y1 + M*b4
-% MiniZinc version uses the native disjunction directly.
+% MiniZinc version uses `diffn` on the primitive expanded by `distance.primitive`
+% on all four sides. That gives the same four-way separation:
+%   (primitive.x - d) + (primitive.width + 2*d) <= box.x
+%   \/ box.x + box.width <= primitive.x - d
+%   \/ (primitive.y - d) + (primitive.height + 2*d) <= box.y
+%   \/ box.y + box.height <= primitive.y - d
 constraint forall(p in Primitive, b in Box where not primitive_membership[p, b]) (
 	primitives[p].x + primitives[p].width + distance.primitive <= boxes[b].x
 	\/ primitives[p].y + primitives[p].height + distance.primitive <= boxes[b].y
 	\/ boxes[b].x + boxes[b].width + distance.primitive <= primitives[p].x
 	\/ boxes[b].y + boxes[b].height + distance.primitive <= primitives[p].y
+	% diffn(
+	% 	[primitives[p].x - distance.primitive, boxes[b].x],
+	% 	[primitives[p].y - distance.primitive, boxes[b].y],
+	% 	[primitives[p].width + 2 * distance.primitive, boxes[b].width],
+	% 	[primitives[p].height + 2 * distance.primitive, boxes[b].height],
+	% )
 );
 
 % Set-name non-overlap from /docker-files/worker/code/ModelConstraints.py:63-82.
-% Original formulation again used four binaries plus big-M; this keeps the same
-% four-way separation as a direct logical disjunction.
-constraint forall(b1, b2 in Box where b1 < b2) (
-	box_text_rects[b1].x + box_text_rects[b1].width + distance.primitive <= box_text_rects[b2].x
-	\/ box_text_rects[b1].y + box_text_rects[b1].height + distance.primitive <= box_text_rects[b2].y
-	\/ box_text_rects[b2].x + box_text_rects[b2].width + distance.primitive <= box_text_rects[b1].x
-	\/ box_text_rects[b2].y + box_text_rects[b2].height + distance.primitive <= box_text_rects[b1].y
+% Original formulation was pairwise with four binaries plus big-M. The intended
+% relation is a non-overlapping family of rectangles, so this extraction uses
+% MiniZinc's native global `diffn` over the full set of label rectangles.
+constraint diffn(
+	box_text_rects.x,
+	box_text_rects.y,
+	[b: box_text_rects[b].width + distance.primitive | b in Box],
+	[b: box_text_rects[b].height + distance.primitive | b in Box],
 );
 
 % Non-overlap for disjoint boxes from /docker-files/worker/code/ModelConstraints.py:84-107.
-% The original used the same four-binary big-M pattern; MiniZinc uses a direct
-% disjunction of the four relative placements.
-constraint forall(b1, b2 in Box where b1 < b2 /\ prevent_box_overlap[b1, b2]) (
-	boxes[b1].x + boxes[b1].width + distance.primitive <= boxes[b2].x
-	\/ boxes[b1].y + boxes[b1].height + distance.primitive <= boxes[b2].y
-	\/ boxes[b2].x + boxes[b2].width + distance.primitive <= boxes[b1].x
-	\/ boxes[b2].y + boxes[b2].height + distance.primitive <= boxes[b1].y
+% The original worker created this relation pairwise. The preprocessing step in
+% /Users/dekker1/Code/temp/RectEuler/main.py now groups that pairwise graph into
+% maximal cliques, and each clique is enforced with a single `diffn`.
+% This is stronger propagation over the same underlying non-overlap edges,
+% because every original pair lies in at least one emitted maximal clique.
+constraint forall(
+	group in box_nonoverlap_groups
+	where card(group) >= 2
+) (
+	diffn(
+		[boxes[b].x | b in group],
+		[boxes[b].y | b in group],
+		[boxes[b].width + distance.primitive | b in group],
+		[boxes[b].height + distance.primitive | b in group],
+	)
 );
 
 % Edge-distance constraints for overlapping, non-nested boxes from
