@@ -13,13 +13,13 @@ from typing import Any
 from minizinc import Instance, Model, Solver
 from PIL import Image, ImageDraw, ImageFont
 
-PRIMITIVE_DIST = 10.0
-BOX_DIST = 10.0
-BOX_TEXT_LEFT_PAD = 10.0
-BOX_TEXT_TOP_PAD = 10.0
-BOX_TEXT_RIGHT_EXTRA = 5.0
-BOX_INNER_PAD = 10.0
-BOX_MIN_TOP_PAD = 30.0
+PRIMITIVE_DIST = 10
+BOX_DIST = 10
+BOX_TEXT_LEFT_PAD = 10
+BOX_TEXT_TOP_PAD = 10
+BOX_TEXT_RIGHT_EXTRA = 5
+BOX_INNER_PAD = 10
+BOX_MIN_TOP_PAD = 30
 TEXT_FONT = "DejaVuSans.ttf"
 FONT_CANDIDATES = (
     TEXT_FONT,
@@ -32,15 +32,15 @@ FONT_CANDIDATES = (
 class PackedPrimitive:
     members: tuple[str, ...]
     box_ids: tuple[int, ...]
-    width: float
-    height: float
+    width: int
+    height: int
 
 
 @dataclass(frozen=True)
 class ReducedInstance:
     box_names: list[str]
     box_enum: list[str]
-    box_text_sizes: list[tuple[float, float]]
+    box_text_sizes: list[tuple[int, int]]
     primitives: list[PackedPrimitive]
     primitive_labels: list[str]
     primitive_enum: list[str]
@@ -49,7 +49,7 @@ class ReducedInstance:
     box_subset: list[list[bool]]
     prevent_box_overlap: list[list[bool]]
     require_box_distance: list[list[bool]]
-    coord_upper: float
+    coord_upper: int
 
 
 @lru_cache(maxsize=None)
@@ -63,39 +63,39 @@ def resolve_font(font_size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont
 
 
 @lru_cache(maxsize=None)
-def measure_text(text: str, font_size: int) -> tuple[float, float]:
+def measure_text(text: str, font_size: int) -> tuple[int, int]:
     font = resolve_font(font_size)
     image = Image.new("RGBA", (1, 1))
     draw = ImageDraw.Draw(image)
     text = text.replace("\\n", "\n")
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-    return float(right - left), float(bottom - top)
+    return right - left, bottom - top
 
 
 def text_size_with_margin(
     text: str, margin: tuple[int, int, int, int], font_size: int
-) -> tuple[float, float]:
+) -> tuple[int, int]:
     width, height = measure_text(text, font_size)
     return (
-        width + float(margin[0] + margin[1]),
-        height + float(margin[2] + margin[3]),
+        width + margin[0] + margin[1],
+        height + margin[2] + margin[3],
     )
 
 
-def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
+def pack_sizes(sizes: list[tuple[int, int]]) -> tuple[int, int]:
     if not sizes:
-        return 0.0, 0.0
+        return 0, 0
 
     root: dict[str, Any] = {
         "used": False,
-        "pos": (0.0, 0.0),
+        "pos": (0, 0),
         "size": [sizes[0][0], sizes[0][1]],
         "down": None,
         "right": None,
     }
 
     def find_node(
-        node: dict[str, Any] | None, size: tuple[float, float]
+        node: dict[str, Any] | None, size: tuple[int, int]
     ) -> dict[str, Any] | None:
         if node is None:
             return None
@@ -105,9 +105,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             return node
         return None
 
-    def split_node(
-        node: dict[str, Any], size: tuple[float, float]
-    ) -> tuple[float, float]:
+    def split_node(node: dict[str, Any], size: tuple[int, int]) -> tuple[int, int]:
         node["used"] = True
         node["down"] = {
             "used": False,
@@ -125,7 +123,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
         }
         return node["pos"]
 
-    def grow_right(width: float, height: float) -> tuple[float, float] | None:
+    def grow_right(width: int, height: int) -> tuple[int, int] | None:
         nonlocal root
         original_root = {
             "used": root["used"],
@@ -140,7 +138,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             "size": [root["size"][0] + width, root["size"][1]],
             "right": {
                 "used": False,
-                "pos": (original_root["size"][0], 0.0),
+                "pos": (original_root["size"][0], 0),
                 "size": [width, root["size"][1]],
                 "down": None,
                 "right": None,
@@ -150,7 +148,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
         node = find_node(root, (width, height))
         return split_node(node, (width, height)) if node is not None else None
 
-    def grow_down(width: float, height: float) -> tuple[float, float] | None:
+    def grow_down(width: int, height: int) -> tuple[int, int] | None:
         nonlocal root
         original_root = {
             "used": root["used"],
@@ -165,7 +163,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             "size": [root["size"][0], root["size"][1] + height],
             "down": {
                 "used": False,
-                "pos": (0.0, original_root["size"][1]),
+                "pos": (0, original_root["size"][1]),
                 "size": [root["size"][0], height],
                 "down": None,
                 "right": None,
@@ -175,7 +173,7 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
         node = find_node(root, (width, height))
         return split_node(node, (width, height)) if node is not None else None
 
-    def grow_node(width: float, height: float) -> tuple[float, float] | None:
+    def grow_node(width: int, height: int) -> tuple[int, int] | None:
         can_grow_down = width <= root["size"][0]
         can_grow_right = height <= root["size"][1]
         should_grow_right = can_grow_right and (
@@ -194,8 +192,8 @@ def pack_sizes(sizes: list[tuple[float, float]]) -> tuple[float, float]:
             return grow_down(width, height)
         return None
 
-    max_x = 0.0
-    max_y = 0.0
+    max_x = 0
+    max_y = 0
     for size in sizes:
         node = find_node(root, size)
         pos = split_node(node, size) if node is not None else grow_node(*size)
@@ -266,8 +264,8 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
         primitive = PackedPrimitive(
             members=members,
             box_ids=box_ids,
-            width=float(packed_width + circle_width),
-            height=float(max(packed_height, circle_height)),
+            width=packed_width + circle_width,
+            height=max(packed_height, circle_height),
         )
         primitive_index = len(primitives)
         primitives.append(primitive)
@@ -322,7 +320,7 @@ def reduce_csv(csv_path: Path) -> ReducedInstance:
     total_max_size += sum(
         max(primitive.width, primitive.height) for primitive in primitives
     )
-    coord_upper = float(max(1.0, 2.0 * total_max_size))
+    coord_upper = max(1, 2 * total_max_size)
     primitive_enum = make_enum_values(primitive_labels, "Primitive")
 
     return ReducedInstance(

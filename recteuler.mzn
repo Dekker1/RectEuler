@@ -3,31 +3,31 @@
 enum Box;
 enum Primitive;
 
-float: coord_upper;
+int: coord_upper;
 
 type Size = record(
-	float: width,
-	float: height,
+	int: width,
+	int: height,
 );
 
 type PaddingConfig = record(
-	float: box_text_left,
-	float: box_text_top,
-	float: box_text_right_extra,
-	float: box_inner,
-	float: box_min_top,
+	int: box_text_left,
+	int: box_text_top,
+	int: box_text_right_extra,
+	int: box_inner,
+	int: box_min_top,
 );
 
 type DistanceConfig = record(
-	float: primitive,
-	float: box,
+	int: primitive,
+	int: box,
 );
 
 type Margins = record(
-	float: left,
-	float: top,
-	float: right,
-	float: bottom,
+	int: left,
+	int: top,
+	int: right,
+	int: bottom,
 );
 
 PaddingConfig: padding;
@@ -46,10 +46,10 @@ array[Box, Box] of bool: require_box_distance;
 % - /Users/dekker1/Code/temp/RectEuler/docker-files/worker/code/ElementGroup_gurobi.py:13-17
 % - /Users/dekker1/Code/temp/RectEuler/docker-files/worker/code/main.py:165-173
 type Rect = record(
-	var 0.0..coord_upper: x,
-	var 0.0..coord_upper: y,
-	var 0.0..coord_upper: width,
-	var 0.0..coord_upper: height,
+	var 0..coord_upper: x,
+	var 0..coord_upper: y,
+	var 0..coord_upper: width,
+	var 0..coord_upper: height,
 );
 
 % Shared containment relation for axis-aligned rectangles with explicit margins.
@@ -66,24 +66,24 @@ predicate rect_contains(
 	/\ (outer.y + outer.height) - (inner.y + inner.height) >= margins.bottom;
 
 predicate rect_contains(Rect: outer, Rect: inner) =
-	rect_contains(outer, inner, (left: 0.0, top: 0.0, right: 0.0, bottom: 0.0));
+	rect_contains(outer, inner, (left: 0, top: 0, right: 0, bottom: 0));
 
 Rect: global_box ::output = let {
-	var 0.0..coord_upper: width;
-	var 0.0..coord_upper: height;
-} in (x: 0.0, y: 0.0, width: width, height: height);
+	var 0..coord_upper: width;
+	var 0..coord_upper: height;
+} in (x: 0, y: 0, width: width, height: height);
 array[Box] of Rect: boxes;
 array[Box] of Rect: box_text_rects ::output = [
 	let {
-		var 0.0..coord_upper: x;
-		var 0.0..coord_upper: y;
+		var 0..coord_upper: x;
+		var 0..coord_upper: y;
 	} in (x: x, y: y, width: box_text_size[b].width, height: box_text_size[b].height)
 	| b in Box
 ];
 array[Primitive] of Rect: primitives ::output = [
 	let {
-		var 0.0..coord_upper: x;
-		var 0.0..coord_upper: y;
+		var 0..coord_upper: x;
+		var 0..coord_upper: y;
 	} in (x: x, y: y, width: primitive_size[p].width, height: primitive_size[p].height)
 	| p in Primitive
 ];
@@ -92,7 +92,7 @@ array[Primitive] of Rect: primitives ::output = [
 % Note: the original formulation uses |globalBox.x2 - globalBox.y2| rather than
 % |(globalBox.x2 - globalBox.x1) - (globalBox.y2 - globalBox.y1)|. This model
 % keeps the exact value because global_box.x and global_box.y are fixed to 0.
-var 0.0..coord_upper: z ::output = abs(global_box.width - global_box.height);
+var 0..coord_upper: z ::output = abs(global_box.width - global_box.height);
 
 % Box label geometry from /docker-files/worker/code/Box_gurobi.py:29-35.
 % These constraints place the set name inside each box and ensure the box is
